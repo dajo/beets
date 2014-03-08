@@ -278,7 +278,7 @@ class EchonestMetadataPlugin(plugins.BeetsPlugin):
     """
     # On Windows, close_fds doesn't work (i.e., raises an exception)
     # when stderr is redirected.
-    return Popen(
+    return check_call(
         args,
         close_fds=platform.system() != 'Windows',
         stderr=open(os.devnull, 'wb'),
@@ -310,7 +310,7 @@ class EchonestMetadataPlugin(plugins.BeetsPlugin):
 
         # Run the command.
         try:
-            subprocess.check_call(_silent_popen(opts))
+            subprocess._silent_popen(opts)
         except (OSError, subprocess.CalledProcessError) as exc:
             log.debug(u'echonest: encode failed: {0}'.format(exc))
             util.remove(dest)

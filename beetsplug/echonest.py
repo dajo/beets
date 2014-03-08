@@ -18,6 +18,7 @@ import time
 import logging
 import socket
 import os
+import platform
 import tempfile
 from string import Template
 import subprocess
@@ -34,7 +35,6 @@ log = logging.getLogger('beets')
 RETRIES = 10
 RETRY_INTERVAL = 10
 
-DEVNULL = open(os.devnull, 'wb')
 ALLOWED_FORMATS = ('MP3', 'OGG', 'AAC')
 
 # The attributes we can import and where to store them in beets fields.
@@ -271,6 +271,18 @@ class EchonestMetadataPlugin(plugins.BeetsPlugin):
 
         return self._flatten_song(max(songs, key=lambda s: s.score))
 
+    #Similar fix as issue 519
+    def _silent_popen(args):
+    """Invoke a command (like subprocess.Popen) while silencing its
+    error output. Return the Popen object.
+    """
+    # On Windows, close_fds doesn't work (i.e., raises an exception)
+    # when stderr is redirected.
+    return Popen(
+        args,
+        close_fds=platform.system() != 'Windows',
+        stderr=open(os.devnull, 'wb'),
+    )
 
     # "Analyze" (upload the audio itself) method.
 
@@ -298,7 +310,7 @@ class EchonestMetadataPlugin(plugins.BeetsPlugin):
 
         # Run the command.
         try:
-            subprocess.check_call(opts, close_fds=True, stderr=DEVNULL)
+            subprocess.check_call(_silent_popen(opts))
         except (OSError, subprocess.CalledProcessError) as exc:
             log.debug(u'echonest: encode failed: {0}'.format(exc))
             util.remove(dest)

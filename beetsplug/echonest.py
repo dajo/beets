@@ -271,7 +271,6 @@ class EchonestMetadataPlugin(plugins.BeetsPlugin):
 
         return self._flatten_song(max(songs, key=lambda s: s.score))
 
-    #Similar fix as issue 519
     def _silent_popen(args):
     """Invoke a command (like subprocess.Popen) while silencing its
     error output. Return the Popen object.
@@ -310,7 +309,7 @@ class EchonestMetadataPlugin(plugins.BeetsPlugin):
 
         # Run the command.
         try:
-            subprocess._silent_popen(opts)
+            _silent_popen(opts)
         except (OSError, subprocess.CalledProcessError) as exc:
             log.debug(u'echonest: encode failed: {0}'.format(exc))
             util.remove(dest)
